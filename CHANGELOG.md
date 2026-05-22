@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.3](https://github.com/jcasal-w/test-app/compare/v0.1.2...v0.1.3) (2026-05-22)
+
+
+### Features
+
+* added footer ([#5](https://github.com/jcasal-w/test-app/issues/5)) ([3b32038](https://github.com/jcasal-w/test-app/commit/3b320380b0b03e89e7422618f7f780cf9e3ebda9))
+
 ## [0.1.2](https://github.com/jcasal-w/test-app/compare/v0.1.1...v0.1.2) (2026-05-22)
 
 
