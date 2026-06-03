@@ -1,6 +1,6 @@
 {
   "name": "test-app",
-  "version": "0.1.5-beta.1",
+  "version": "0.1.5",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -13,7 +13,7 @@
   "packageManager": "npm@11.11.0",
   "dependencies": {
     "@angular/common": "^21.2.0",
-    "@angular/compiler": "^21.2.0",
+  "@angular/compiler": "^21.2.0",r
     "@angular/core": "^21.2.0",
     "@angular/forms": "^21.2.0",
     "@angular/platform-browser": "^21.2.0",
