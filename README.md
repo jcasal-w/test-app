@@ -56,7 +56,7 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 
 ## Deployment
 
-We use release please to generate automatic PR
+We use release please to generate automatic PR. Merge your PRs to main and a PR will be created for the release.
 
 ## Additional Resources
 
