@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0-beta.1](https://github.com/jcasal-w/test-app/compare/v0.1.5-beta.1...v0.2.0-beta.1) (2026-06-03)
+
+
+### Features
+
+* new feature ([#11](https://github.com/jcasal-w/test-app/issues/11)) ([1660140](https://github.com/jcasal-w/test-app/commit/16601407f272fa2a5634de719920c2b087999c49))
+* use release please ([#13](https://github.com/jcasal-w/test-app/issues/13)) ([05611fa](https://github.com/jcasal-w/test-app/commit/05611fa758b2c3d44a109e4d06ad456b76d3835e))
+
+
+### Bug Fixes
+
+* formatting ([#6](https://github.com/jcasal-w/test-app/issues/6)) ([02b456f](https://github.com/jcasal-w/test-app/commit/02b456fc053a8e48df9c9a57f448c2287a8fceea))
+
 ## [0.1.5-beta.1](https://github.com/jcasal-w/test-app/compare/v0.1.4-beta.1...v0.1.5-beta.1) (2026-06-03)
 
 
