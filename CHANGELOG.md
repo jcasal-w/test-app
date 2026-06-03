@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1-beta.1](https://github.com/jcasal-w/test-app/compare/v0.2.0-beta.1...v0.2.1-beta.1) (2026-06-03)
+
+
+### Bug Fixes
+
+* issue ([#16](https://github.com/jcasal-w/test-app/issues/16)) ([c4522ac](https://github.com/jcasal-w/test-app/commit/c4522ac8c32044756906d6a1e6554efa628b5c41))
+
 ## [0.2.0-beta.1](https://github.com/jcasal-w/test-app/compare/v0.1.5-beta.1...v0.2.0-beta.1) (2026-06-03)
 
 
