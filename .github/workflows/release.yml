@@ -5,14 +5,11 @@ on:
 name: Release
 
 jobs:
+  validate:
+    uses: ./.github/workflows/validate.yml
   release:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Validate
-        uses: ./.github/workflows/validate.yml
-
       - name: Release
         run: echo "Releasing..."
