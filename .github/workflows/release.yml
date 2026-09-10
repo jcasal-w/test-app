@@ -15,4 +15,5 @@ jobs:
         uses: ./.github/workflows/validate.yml
 
       - name: Release
-        run: echo "Releasing..."
+        run: echo "Releasing..."git push
+        
