@@ -1,0 +1,15 @@
+on:
+  release:
+    types: [created]
+  
+name: Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate
+        uses: ./.github/workflows/validate.yml
+
+      - name: Release
+        run: echo "Releasing..."
