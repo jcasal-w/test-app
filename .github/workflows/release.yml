@@ -11,6 +11,8 @@ jobs:
       - name: Gate RC release
         shell: bash
         run: |
+          set -euo pipefail
+
           TAG="${{ github.event.release.tag_name }}"
           NAME="${{ github.event.release.name }}"
 
