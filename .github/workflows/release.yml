@@ -5,12 +5,45 @@ on:
 name: Release
 
 jobs:
+  check-release-matches-rc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gate RC release
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          NAME="${{ github.event.release.name }}"
+
+          # Require prerelease tag like 1.0.0-rc1
+          if [[ ! "$TAG" =~ ^([0-9]+\.[0-9]+\.[0-9]+)-rc[0-9]+$ ]]; then
+            echo "Skipping: not an RC prerelease tag: $TAG"
+            exit 1`
+          fi
+
+          BASE_VERSION="${BASH_REMATCH[1]}"
+
+          # Require release name to be the base version (e.g. 1.0.0)
+          if [[ "$NAME" != "$BASE_VERSION" ]]; then
+            echo "Invalid release name: expected '$BASE_VERSION', got '$NAME'"
+            exit 1
+          fi
+
+          echo "Gate passed for RC release: tag=$TAG name=$NAME"
+
   validate:
+    needs: check-release-matches-rc
     uses: ./.github/workflows/validate.yml
 
-  release:
+  deploy-to-uat:
     needs: validate
     runs-on: ubuntu-latest
     steps:
-      - name: Release
-        run: echo "Releasing..."
+      - name: Deploy to UAT
+        run: echo "Deploying to UAT..."
+
+  deploy-to-production:
+    needs: deploy-to-uat
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Production
+        run: echo "Deploying to Production..."
