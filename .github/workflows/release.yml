@@ -11,20 +11,20 @@ jobs:
       - name: Gate RC release
         shell: bash
         run: |
-          set -euo pipefail
+         set -euo pipefail
 
           TAG="${{ github.event.release.tag_name }}"
           NAME="${{ github.event.release.name }}"
 
-          # Require prerelease tag like 1.0.0-rc1
+          # Require tags like v0.2.0-rc3
           if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)-rc[0-9]+$ ]]; then
-            echo "Skipping: not an RC prerelease tag: $TAG"
-            exit 1`
+            echo "Skipping: not a valid RC prerelease tag: $TAG"
+            exit 1
           fi
 
-          BASE_VERSION="${BASH_REMATCH[1]}"
+          BASE_VERSION="v${BASH_REMATCH[1]}"
 
-          # Require release name to be the base version (e.g. 1.0.0)
+          # Require release name to be the base version, including leading v
           if [[ "$NAME" != "$BASE_VERSION" ]]; then
             echo "Invalid release name: expected '$BASE_VERSION', got '$NAME'"
             exit 1
