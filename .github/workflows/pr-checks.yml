@@ -8,7 +8,7 @@ on:
       - reopened
       - edited
   
-name: Release Candidate
+name: PR Checks
 
 jobs:
   validate:
