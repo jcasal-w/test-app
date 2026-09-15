@@ -72,7 +72,7 @@ jobs:
         run: echo "Deploying to UAT..."
 
   deploy-to-production:
-    needs: deploy-to-uat
+    needs: [mark-for-release, deploy-to-uat]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Production
