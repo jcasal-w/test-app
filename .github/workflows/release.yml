@@ -7,11 +7,14 @@ name: Release
 jobs:
   check-release-matches-rc:
     runs-on: ubuntu-latest
+    outputs:
+      base_version: ${{ steps.gate-rc.outputs.base_version }}
     steps:
       - name: Gate RC release
+        id: gate-rc
         shell: bash
         run: |
-         set -euo pipefail
+          set -euo pipefail
 
           TAG="${{ github.event.release.tag_name }}"
           NAME="${{ github.event.release.name }}"
@@ -31,10 +34,34 @@ jobs:
           fi
 
           echo "Gate passed for RC release: tag=$TAG name=$NAME"
+          echo "Base version: $BASE_VERSION"
+          echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
 
   validate:
     needs: check-release-matches-rc
     uses: ./.github/workflows/validate.yml
+
+  mark-for-release:
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Mark as Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Marking as release..."
+          NEW_TAG="${{ needs.check-release-matches-rc.outputs.base_version }}"
+          echo "Tagging as release: $NEW_TAG"
+
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
+          git push origin "$NEW_TAG"
 
   deploy-to-uat:
     needs: validate
