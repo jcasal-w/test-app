@@ -81,8 +81,11 @@ jobs:
               CURRENT_BUMP="major"
             elif [[ "$RC_MINOR" != "$BASE_MINOR" ]]; then
               CURRENT_BUMP="minor"
-            else
+            elif [[ "$RC_PATCH" != "$BASE_PATCH" ]]; then
               CURRENT_BUMP="patch"
+            else
+              # rc's base version matches the latest release exactly: it was already promoted, no cycle in progress
+              CURRENT_BUMP="none"
             fi
             CURRENT_PRECEDENCE=$(precedence "$CURRENT_BUMP")
           fi
