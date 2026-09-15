@@ -42,7 +42,7 @@ jobs:
     uses: ./.github/workflows/validate.yml
 
   mark-for-release:
-    needs: validate
+    needs: [validate, check-release-matches-rc]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -54,6 +54,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           echo "Marking as release..."
           NEW_TAG="${{ needs.check-release-matches-rc.outputs.base_version }}"
           echo "Tagging as release: $NEW_TAG"
