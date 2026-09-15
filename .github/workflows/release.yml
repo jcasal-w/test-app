@@ -64,7 +64,7 @@ jobs:
           git push origin "$NEW_TAG"
 
   deploy-to-uat:
-    needs: validate
+    needs: mark-for-release
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to UAT
