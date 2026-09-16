@@ -78,22 +78,23 @@ jobs:
       - name: Update release candidate tags after release
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
 
-          git fetch --tags --quiet
-          LATEST_RELEASE=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' |
-            grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' |
-            sort -V |
-            tail -n1 || true)
+          echo "Fetching the latest tags from origin..."
+          git fetch origin --tags --force
 
-          if [[ -n "$LATEST_RELEASE" ]]; then
-            BASE_VERSION="${LATEST_RELEASE#v}"
-            COMMIT_RANGE="${LATEST_RELEASE}..HEAD"
-          else
-            LATEST_RELEASE="v0.0.0"
-            BASE_VERSION="0.0.0"
-            COMMIT_RANGE="HEAD"
+          LATEST_RELEASE=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V \
+            | tail -n1 || true)
+
+          if [[ -z "${LATEST_RELEASE:-}" ]]; then
+            echo "No release tag found after fetch; skipping retagging."
+            exit 0
           fi
+
+          BASE_VERSION="${LATEST_RELEASE#v}"
+          COMMIT_RANGE="${LATEST_RELEASE}..HEAD"
 
           COMMITS=()
           while IFS= read -r COMMIT; do
@@ -103,7 +104,7 @@ jobs:
           echo "Latest release tag: $LATEST_RELEASE"
 
           if (( ${#COMMITS[@]} == 0 )); then
-            echo "No commits found after $LATEST_RELEASE"
+            echo "No commits found after $LATEST_RELEASE; nothing to retag."
             exit 0
           fi
 
@@ -112,12 +113,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           NEW_REFS=()
-          PRIOR_COMMIT_COUNT=$((${#COMMITS[@]} - 1))
           CURRENT_PRECEDENCE=0
           RC_VERSION="$BASE_VERSION"
           RC_NUMBER=0
 
-          for (( INDEX = 0; INDEX < PRIOR_COMMIT_COUNT; INDEX++ )); do
+          for (( INDEX = 0; INDEX < ${#COMMITS[@]}; INDEX++ )); do
             COMMIT="${COMMITS[$INDEX]}"
             SUBJECT=$(git log -1 --format=%s "$COMMIT")
             NORMALIZED_SUBJECT=$(printf '%s' "$SUBJECT" | tr '[:upper:]' '[:lower:]')
