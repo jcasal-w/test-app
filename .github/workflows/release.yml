@@ -65,15 +65,20 @@ jobs:
           git push origin "$NEW_TAG"
 
   deploy-to-uat:
-    needs: mark-for-release
+    needs: [mark-for-release, check-release-matches-rc]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to UAT
-        run: echo "Deploying to UAT..."
+        run: |
+          echo "Starting deployment to UAT..."
+          RELEASE_TAG="${{ needs.check-release-matches-rc.outputs.base_version }}"
+          echo "Deploying to UAT... $RELEASE_TAG"
 
   deploy-to-production:
-    needs: [mark-for-release, deploy-to-uat]
+    needs: [mark-for-release, deploy-to-uat, check-release-matches-rc]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Production
-        run: echo "Deploying to Production..."
+        run: |
+          RELEASE_TAG="${{ needs.check-release-matches-rc.outputs.base_version }}"
+          echo "Deploying to Production... $RELEASE_TAG"
