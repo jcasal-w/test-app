@@ -11,9 +11,20 @@ on:
 name: PR Checks
 
 jobs:
+  check-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title
+        run: |
+          echo "Checking PR title"
+          if [[ ! "${{ github.event.pull_request.title }}" =~ \[(major|minor|patch|no-bump)\] ]]; then
+            echo "::error::PR title must contain [major], [minor], [patch], or [no-bump]"
+            exit 1
+          fi
   validate:
     # uses: ./.github/workflows/validate.yml
     runs-on: ubuntu-latest
+    needs: [check-pr-title]
     steps:
       - name: Run PR checks
         run: echo "Running PR checks"
