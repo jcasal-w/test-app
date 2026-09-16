@@ -49,7 +49,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+        with:
+          # release events don't check out the tag commit by default; pin explicitly
+          ref: ${{ github.event.release.tag_name }}
+
       - name: Mark as Release
         shell: bash
         run: |
@@ -73,6 +76,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          # release events check out the release's target commit, not the branch tip;
+          # pin to the default branch so HEAD includes commits made after the release
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
 
       - name: Update release candidate tags after release
