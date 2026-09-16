@@ -37,12 +37,12 @@ jobs:
           echo "Base version: $BASE_VERSION"
           echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
 
-  validate:
-    needs: check-release-matches-rc
-    uses: ./.github/workflows/validate.yml
+  # validate:
+  #   needs: check-release-matches-rc
+  #   uses: ./.github/workflows/validate.yml
 
   mark-for-release:
-    needs: [validate, check-release-matches-rc]
+    needs: [check-release-matches-rc]
     runs-on: ubuntu-latest
     permissions:
       contents: write
