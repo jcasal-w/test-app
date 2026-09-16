@@ -64,8 +64,120 @@ jobs:
           git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
           git push origin "$NEW_TAG"
 
-  deploy-to-uat:
+  review-commits-since-last-release:
     needs: [mark-for-release, check-release-matches-rc]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update release candidate tags after release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch --tags --quiet
+          LATEST_RELEASE=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' |
+            grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' |
+            sort -V |
+            tail -n1 || true)
+
+          if [[ -n "$LATEST_RELEASE" ]]; then
+            BASE_VERSION="${LATEST_RELEASE#v}"
+            COMMIT_RANGE="${LATEST_RELEASE}..HEAD"
+          else
+            LATEST_RELEASE="v0.0.0"
+            BASE_VERSION="0.0.0"
+            COMMIT_RANGE="HEAD"
+          fi
+
+          COMMITS=()
+          while IFS= read -r COMMIT; do
+            COMMITS+=("$COMMIT")
+          done < <(git rev-list --reverse "$COMMIT_RANGE")
+
+          echo "Latest release tag: $LATEST_RELEASE"
+
+          if (( ${#COMMITS[@]} == 0 )); then
+            echo "No commits found after $LATEST_RELEASE"
+            exit 0
+          fi
+
+          IFS='.' read -r BASE_MAJOR BASE_MINOR BASE_PATCH <<< "$BASE_VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          NEW_REFS=()
+          PRIOR_COMMIT_COUNT=$((${#COMMITS[@]} - 1))
+          CURRENT_PRECEDENCE=0
+          RC_VERSION="$BASE_VERSION"
+          RC_NUMBER=0
+
+          for (( INDEX = 0; INDEX < PRIOR_COMMIT_COUNT; INDEX++ )); do
+            COMMIT="${COMMITS[$INDEX]}"
+            SUBJECT=$(git log -1 --format=%s "$COMMIT")
+            NORMALIZED_SUBJECT=$(printf '%s' "$SUBJECT" | tr '[:upper:]' '[:lower:]')
+
+            if [[ "$NORMALIZED_SUBJECT" == *"[major]"* ]]; then
+              BUMP="major"
+              PRECEDENCE=3
+            elif [[ "$NORMALIZED_SUBJECT" == *"[minor]"* ]]; then
+              BUMP="minor"
+              PRECEDENCE=2
+            elif [[ "$NORMALIZED_SUBJECT" == *"[patch]"* ]]; then
+              BUMP="patch"
+              PRECEDENCE=1
+            elif [[ "$NORMALIZED_SUBJECT" == *"[no-bump]"* ]]; then
+              BUMP="no-bump"
+              PRECEDENCE=0
+            else
+              BUMP="patch"
+              PRECEDENCE=1
+            fi
+
+            if (( PRECEDENCE > CURRENT_PRECEDENCE )); then
+              case "$BUMP" in
+                major) RC_VERSION="$((BASE_MAJOR + 1)).0.0" ;;
+                minor) RC_VERSION="${BASE_MAJOR}.$((BASE_MINOR + 1)).0" ;;
+                patch) RC_VERSION="${BASE_MAJOR}.${BASE_MINOR}.$((BASE_PATCH + 1))" ;;
+              esac
+              CURRENT_PRECEDENCE=$PRECEDENCE
+              RC_NUMBER=1
+            else
+              RC_NUMBER=$((RC_NUMBER + 1))
+            fi
+
+            echo "${COMMIT:0:7} [$BUMP] $SUBJECT -> v${RC_VERSION}-rc.${RC_NUMBER}"
+            CORRECTED_TAG="v${RC_VERSION}-rc.${RC_NUMBER}"
+
+            if git rev-parse -q --verify "refs/tags/$CORRECTED_TAG" >/dev/null; then
+              TAGGED_COMMIT=$(git rev-list -n1 "$CORRECTED_TAG")
+              if [[ "$TAGGED_COMMIT" != "$COMMIT" ]]; then
+                echo "::error::Tag $CORRECTED_TAG already points to $TAGGED_COMMIT instead of $COMMIT"
+                exit 1
+              fi
+
+              echo "$CORRECTED_TAG already points to ${COMMIT:0:7}"
+              continue
+            fi
+
+            git tag -a "$CORRECTED_TAG" "$COMMIT" -m "Release candidate $CORRECTED_TAG"
+            NEW_REFS+=("refs/tags/${CORRECTED_TAG}:refs/tags/${CORRECTED_TAG}")
+            echo "Added corrected tag $CORRECTED_TAG to ${COMMIT:0:7}"
+          done
+
+          if (( ${#NEW_REFS[@]} > 0 )); then
+            git push origin "${NEW_REFS[@]}"
+          else
+            echo "No earlier RC tags need correction"
+          fi
+
+  deploy-to-uat:
+    needs: [review-commits-since-last-release, mark-for-release, check-release-matches-rc]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to UAT
@@ -75,7 +187,7 @@ jobs:
           echo "Deploying to UAT... $RELEASE_TAG"
 
   deploy-to-production:
-    needs: [mark-for-release, deploy-to-uat, check-release-matches-rc]
+    needs: [review-commits-since-last-release, mark-for-release, deploy-to-uat, check-release-matches-rc]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Production
