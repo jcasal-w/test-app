@@ -11,7 +11,7 @@ on:
 name: PR Validation
 
 jobs:
-  check-pr-title:
+  check-title:
     runs-on: ubuntu-latest
     steps:
       - name: Check PR title
@@ -24,7 +24,7 @@ jobs:
   validate:
     # uses: ./.github/workflows/validate.yml
     runs-on: ubuntu-latest
-    needs: [check-pr-title]
+    needs: [check-title]
     steps:
       - name: Run PR checks
-        run: echo "Running PR checks"
+        run: echo "Running PR validation"
